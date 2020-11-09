@@ -58,12 +58,17 @@ $ aws iam create-role --role-name lambda-ex --assume-role-policy-document file:/
 
 Create a new function that will be a lambda, and save it as `lambda_function.py`:
 ```
+$ cat lambda_function.py 
 import json
 def lambda_handler(event, context):
-    msg = "%s %s : %s"%(event['text1'],event['text2'],event['text3'])
+    x = event['x']
+    y = event['y']
+    msg = event['msg']
     return {
         'statusCode': 200,
-        'body': json.dumps(msg)
+        'msg': json.dumps(msg.lower()),
+        'product': x*y,
+        'diff': x-y
     }
 ```
 
@@ -117,9 +122,9 @@ We can defined what these variables are in another `json` file that will be sent
 ```
 $ cat message.json 
 {
-      "text1":"ey",
-      "text2":"up",
-      "text3":"just said hello"
+      "msg":"Ey UP maTe",
+      "x": 112321,
+      "y": 232390
 }
 ```
 
@@ -132,5 +137,13 @@ $ aws lambda invoke --function-name test-message --payload fileb://message.json 
 Checking the response, we will see that it succeeded!
 ```
 $ cat response.json 
-{"statusCode": 200, "body": "\"ey up : just said hello\""}
+{"statusCode": 200, "msg": "\"ey up mate\"", "product": 26102277190, "diff": -120069}
+```
+
+
+### Update the function
+
+```
+zip my-deployment-package.zip lambda_function.py
+aws lambda update-function-code --function-name test-message --zip-file fileb://my-deployment-package.zip
 ```
